@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package db
 
 import (
@@ -24,8 +10,11 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// AddTaskTmpl adds a record into table `task_tmpls`.
+/**
+ * description: `task_tmpls` 新增一个task模板
+ */
 func AddTaskTmpl(name, content, brief, operator string, vars []model.TaskTmplVar, icon string) (t model.TaskTmpl, e error) {
+	// 开启事务
 	tx := db.Begin()
 
 	if name == "" || content == "" {
@@ -59,6 +48,7 @@ func AddTaskTmpl(name, content, brief, operator string, vars []model.TaskTmplVar
 	}
 
 	stmt := fmt.Sprintf("INSERT INTO task_tmpl_vars (`task_tmpl_id`, `name`, `title`, `comment`, `form_type`, `data_source`, `default`) VALUES %s", strings.Join(valueStrings, ","))
+	// 插入数据
 	if e := tx.Exec(stmt, valueArgs...).Error; e != nil {
 		log.Error("[service] AddTaskTmplVar fail", "error", e.Error())
 		tx.Rollback()
@@ -68,7 +58,9 @@ func AddTaskTmpl(name, content, brief, operator string, vars []model.TaskTmplVar
 	return t, tx.Commit().Error
 }
 
-// DelTaskTmpl deletes specific record of table `task_tmpls`.
+/**
+ * description: `task_tmpls` 删除指定task模板
+ */
 func DelTaskTmpl(id int) error {
 	if e := db.Where("id = ?", id).Delete(model.TaskTmpl{}).Error; e != nil {
 		log.Info("[service] DelTaskTmpl fail", "error", e.Error())
@@ -77,7 +69,9 @@ func DelTaskTmpl(id int) error {
 	return nil
 }
 
-// UpdateTaskTmpl updates specific record of table `task_tmpls`.
+/**
+ * description: `task_tmpls` 更新指定task模板
+ */
 func UpdateTaskTmpl(name, content, brief, operator string, id uint, icon string) error {
 	if id == 0 {
 		return ErrInvalidParams
@@ -108,7 +102,9 @@ func UpdateTaskTmpl(name, content, brief, operator string, id uint, icon string)
 	return nil
 }
 
-// GetTaskTmpl queries records from table `task_tmpls` with provided conditions.
+/**
+ * description: 【查询】根据提供的条件查询`task_tmpls`中符合的记录
+ */
 func GetTaskTmpl(name, content, operator string, ids []uint, ctmin, ctmax int, revision, tp uint) []model.TaskTmpl {
 	var whereStr = "1=1 "
 	var args = make([]interface{}, 0)

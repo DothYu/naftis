@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package db
 
 import (
@@ -31,22 +17,27 @@ var (
 	db *gorm.DB
 )
 
-// migrate migrates database schemas.
+/**
+ * description: 迁移数据库表
+ */
 func migrate() {
 	db.AutoMigrate(&model.Task{})
 	db.AutoMigrate(&model.TaskTmpl{})
 }
 
 var (
-	// ErrInvalidParams defines invalid params error.
+	// 非法参数错误
 	ErrInvalidParams = errors.New("invalid params")
-	// ErrSQLExec defines sql execution error.
+	// sql执行错误
 	ErrSQLExec = errors.New("sql executed fail")
 )
 
-// Init initializes db pkg.
+/**
+ * description: 初始化db包
+ */
 func Init() {
 	var err error
+	// 数据库连接
 	db, err = gorm.Open("mysql", viper.GetString("db.default"))
 	if err != nil {
 		panic(fmt.Errorf("failed to connect database %s", err))

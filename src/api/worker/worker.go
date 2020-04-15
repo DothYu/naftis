@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package worker
 
 import (
@@ -30,7 +16,7 @@ type worker struct {
 }
 
 const (
-	// JobQueueSize defines max job queue size.
+	// 定义任务队列大小
 	JobQueueSize = 1000
 )
 
@@ -39,7 +25,7 @@ var w = &worker{
 	block: make(chan bool, 1),
 }
 
-// Start starts task worker.
+// 开启任务执行器
 func Start() {
 	for {
 		select {
@@ -53,18 +39,20 @@ func Start() {
 	}
 }
 
-// Stop stops worker and close job queue.
+/**
+ * description: 停止worker并关闭任务队列
+ */
 func Stop() {
 	fmt.Println(`terminating worker`)
 	w.block <- true
 	close(w.jobs)
 }
 
-// Feed adds new job to job queue.
+// 将一个新任务添加到任务队列中
 func Feed(tmplID uint, command int, content string, operator string, serviceUID, namespace string, revision uint) error {
 	select {
 	case <-w.block:
-		fmt.Println(`worker is terminating, cann't add job any more.'`)
+		fmt.Println(`worker is terminating, can't add job any more.'`)
 		w.block <- true
 	default:
 		t := executor.Task{

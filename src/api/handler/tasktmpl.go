@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package handler
 
 import (
@@ -34,7 +20,9 @@ type taskTmplPayload struct {
 	Default string              `string:"default"`
 }
 
-// ListTaskTmpls returns specified task template.
+/**
+ * description: 返回指定的任务模板
+ */
 func ListTaskTmpls(c *gin.Context) {
 	ids := make([]uint, 0, 1)
 	if idStr := c.Param("id"); idStr != "" {
@@ -46,7 +34,9 @@ func ListTaskTmpls(c *gin.Context) {
 	})
 }
 
-// ListTaskTmplVars returns variable map of specific task template.
+/**
+ * description: 返回指定task模板的variable map
+ */
 func ListTaskTmplVars(c *gin.Context) {
 	var taskTmplID = cast.ToUint(c.Param("id"))
 	c.JSON(200, gin.H{
@@ -55,7 +45,9 @@ func ListTaskTmplVars(c *gin.Context) {
 	})
 }
 
-// AddTaskTmpls adds a task template.
+/**
+ * description: 新建一个任务模板
+ */
 func AddTaskTmpls(c *gin.Context) {
 	var p taskTmplPayload
 	if e := c.BindJSON(&p); e != nil {
@@ -73,7 +65,9 @@ func AddTaskTmpls(c *gin.Context) {
 	})
 }
 
-// UpdateTaskTmpls updates a task template.
+/**
+ * description: 更新一个任务模板
+ */
 func UpdateTaskTmpls(c *gin.Context) {
 	var id = cast.ToUint(c.Param("id"))
 	var p taskTmplPayload
@@ -88,7 +82,9 @@ func UpdateTaskTmpls(c *gin.Context) {
 	c.JSON(200, util.RetOK)
 }
 
-// DeleteTaskTmpls soft deletes a task template.
+/**
+ * description: 删除一个任务模板
+ */
 func DeleteTaskTmpls(c *gin.Context) {
 	var id = cast.ToInt(c.Param("id"))
 	if e := service.TaskTmpl.Delete(id); e != nil {

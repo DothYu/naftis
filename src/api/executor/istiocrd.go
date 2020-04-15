@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package executor
 
 import (
@@ -31,7 +17,7 @@ import (
 )
 
 var (
-	// ErrTaskNotExists is returned when we can't find specific task from istio
+	// istio 中找不到指定的task
 	ErrTaskNotExists = errors.New("task isn't exists")
 )
 
@@ -39,7 +25,9 @@ type istiocrdExecutor struct {
 	client *crd.Client
 }
 
-// NewCrdExecutor returns a istiocrd executor.
+/**
+ * description: 返回一个 istiocrd executor
+ */
 func NewCrdExecutor() Executor {
 	c, e := crd.NewClient(util.Kubeconfig(), "", istiomodel.IstioConfigTypes, "")
 	if e != nil {
@@ -51,6 +39,9 @@ func NewCrdExecutor() Executor {
 }
 
 var (
+	/**
+	 * description: 新增task
+	 */
 	addTask = func(task *Task) (e error) {
 		e = db.AddTask(task.TaskTmplID, task.Content, task.Operator, task.ServiceUID, task.PrevState, task.Namespace, task.Status)
 		if e != nil {
@@ -61,7 +52,7 @@ var (
 	}
 )
 
-// Execute implements Executor.Execute()
+// 实现 Executor.Execute()，task的执行方法
 func (i *istiocrdExecutor) Execute(task Task) error {
 	switch task.Command {
 	case model.Create, model.Replace, model.Delete, model.Rollback:
@@ -146,11 +137,14 @@ func (i *istiocrdExecutor) delete(varr []istiomodel.Config, task *Task) (errs er
 }
 
 func (i *istiocrdExecutor) crdExec(task Task, t taskDbHandler) (errs error) {
+	// 将task状态标志为TaskStatusSucc
 	task.Status = model.TaskStatusSucc
+	// 若执行过程中发生错误，则将task状态标志为TaskStatusFail，并且执行参数taskDbHandler方法
 	defer func() {
 		if errs != nil {
 			task.Status = model.TaskStatusFail
 		}
+		// 执行参数taskDbHandler方法
 		t(&task)
 	}()
 

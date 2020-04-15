@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package executor
 
 import (
@@ -21,15 +7,18 @@ import (
 	"github.com/xiaomi/naftis/src/api/model"
 )
 
-// DefaultExecutor defines default task executor.
+// 默认task执行器
 var DefaultExecutor Executor
 
-// Init initializes executor package.
+/**
+ * description: 初始化executor包
+ */
 func Init() {
+	// 返回一个 istiocrd executor
 	DefaultExecutor = NewCrdExecutor()
 }
 
-// Executor will dispatch and execute task from channel.
+// Executor 将从通道分派并执行任务
 type Executor interface {
 	Execute(Task) error
 }
@@ -40,18 +29,19 @@ type Task = model.Task
 type taskDbHandler = func(task *Task) error
 
 var (
-	// ErrUnknownCmd defines invalid command error
+	// invalid command error
 	ErrUnknownCmd = errors.New("unknown command")
 )
 
 var (
-	// TaskStatusChM stores task execution result into a channel map
+	// TaskStatusChM 将task执行结果保存到 channel map 中
 	TaskStatusChM    = make(map[string]chan Task)
 	taskStatusChMMtx = new(sync.RWMutex)
 )
 
-// GetOrAddTaskStatusChM returns task channel from taskStatusChM group by operator,
-// if channel is not exists, we makes a new one then return it.
+/**
+ * description: 返回 task channel from taskStatusChM group by operator, 如果channel不存在，则新建一个
+ */
 func GetOrAddTaskStatusChM(name string) chan Task {
 	taskStatusChMMtx.Lock()
 	u, ok := TaskStatusChM[name]
@@ -63,7 +53,9 @@ func GetOrAddTaskStatusChM(name string) chan Task {
 	return u
 }
 
-// Push2TaskStatusCh pushes task into taskStatusChM.
+/**
+ * description: 将 task 添加到 taskStatusChM 中
+ */
 func Push2TaskStatusCh(task Task) {
 	GetOrAddTaskStatusChM(task.Operator) <- task
 }

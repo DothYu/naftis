@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package db
 
 import (
@@ -21,7 +7,9 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// AddTask adds a record into `tasks`.
+/**
+ * description: 【新增】往`tasks`中新增一条记录，即新增一个task
+ */
 func AddTask(tmplID uint, content, operator, serviceUID, prevState, namespace string, status uint) error {
 	if content == "" || operator == "" || serviceUID == "" || namespace == "" {
 		return ErrInvalidParams
@@ -45,7 +33,9 @@ func AddTask(tmplID uint, content, operator, serviceUID, prevState, namespace st
 	return nil
 }
 
-// DeleteTask deletes specific record of `tasks`.
+/**
+ * description: 【删除】删除`tasks`中一条记录，即删除一个指定的task
+ */
 // Deprecated: the function is already Deprecated.
 func DeleteTask(id uint, operator string) error {
 	if e := db.Where("id = ?", id).Delete(model.Task{}).Update("operator", operator).Error; e != nil {
@@ -55,7 +45,9 @@ func DeleteTask(id uint, operator string) error {
 	return nil
 }
 
-// UpdateTask updates specific record of `tasks`.
+/**
+ * description: 【更新】更新`tasks`中一条记录，即更新一个指定的task
+ */
 // Deprecated: the function is already Deprecated.
 func UpdateTask(content, operator, serviceUID string, id, tmplID, status uint) error {
 	if id == 0 {
@@ -89,7 +81,9 @@ func UpdateTask(content, operator, serviceUID string, id, tmplID, status uint) e
 	return nil
 }
 
-// GetTask queries records from `tasks` with provided fields.
+/**
+ * description: 【查询】根据提供的字段查询`tasks`中的记录
+ */
 func GetTask(name, content, operator, serviceUID string, id uint, ctmin, ctmax int, revision uint) []model.Task {
 	var whereStr = "1=1 "
 	var args = make([]interface{}, 0)
@@ -128,6 +122,7 @@ func GetTask(name, content, operator, serviceUID string, id uint, ctmin, ctmax i
 		args = append(args, revision)
 	}
 
+	// 通过gorm操作数据库查询
 	if e := db.Where(whereStr, args...).Order("created_at desc").Find(&tasks).Error; e != nil {
 		log.Info("[service] GetTask fail", "error", e.Error())
 	}

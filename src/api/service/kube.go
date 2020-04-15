@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package service
 
 import (
@@ -31,23 +17,23 @@ import (
 )
 
 var (
-	// ServiceInfo handles normal service running in the k8s
+	// ServiceInfo 处理在k8s中正常运行的service
 	ServiceInfo *kubeInfo
-	// IstioInfo handles istio service running in the k8s
+	// IstioInfo 处理在k8s中运行的istio service
 	IstioInfo *kubeInfo
 )
 
 type service struct {
-	v1.Service
-	Pods pods
+	v1.Service      // 即k8s中定义的资源对象: service
+	Pods       pods // 即k8s中定义的一组pod
 }
 
 type kubeInfo struct {
-	mtx          *sync.RWMutex
-	wg           *sync.WaitGroup
-	services     []service
-	pods         []v1.Pod
-	namespaces   []v1.Namespace
+	mtx          *sync.RWMutex   // 读写锁
+	wg           *sync.WaitGroup // WaitGroup 对象内部有一个计数器，最初从0开始，它有三个方法：Add(), Done(), Wait() 用来控制计数器的数量。Add(n) 把计数器设置为n ，Done() 每次把计数器-1 ，wait() 会阻塞代码的运行，直到计数器地值减为0。
+	services     []service       // 一组service
+	pods         []v1.Pod        // 一组pod
+	namespaces   []v1.Namespace  // 一组namespace
 	syncInterval time.Duration
 	namespace    string
 }
@@ -57,9 +43,11 @@ var (
 	kubeconfig string
 )
 
-// InitKube initializes kube.
+/**
+ * description: 初始化kube
+ */
 func InitKube() {
-	// init k8s client
+	// 初始化k8s客户端
 	kubeconfig = util.Kubeconfig()
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
@@ -75,7 +63,7 @@ func InitKube() {
 	ServiceInfo = newKubeInfo("", time.Second*5)
 	IstioInfo = newKubeInfo(bootstrap.Args.IstioNamespace, time.Second*5)
 
-	// start sync service info
+	// 周期性地从k8s与istio中同步集群信息
 	go ServiceInfo.sync()
 	go IstioInfo.sync()
 }
@@ -93,6 +81,9 @@ func newKubeInfo(namespace string, syncInterval time.Duration) *kubeInfo {
 type services []service
 type namespaces []v1.Namespace
 
+/**
+ * description: 排除这些namespace下的service
+ */
 func (p services) Exclude(namespaces ...string) services {
 	namespacesM := make(map[string]bool)
 	for _, n := range namespaces {
@@ -108,6 +99,9 @@ func (p services) Exclude(namespaces ...string) services {
 	return retServices
 }
 
+/**
+ * description: 返回所有/特定service
+ */
 func (k *kubeInfo) Services(uid string) services {
 	k.mtx.RLock()
 	defer k.mtx.RUnlock()
@@ -126,6 +120,9 @@ func (k *kubeInfo) Services(uid string) services {
 	return ret
 }
 
+/**
+ * description: 返回所有/特定namespace
+ */
 func (k *kubeInfo) Namespaces(namespace string) namespaces {
 	k.mtx.RLock()
 	defer k.mtx.RUnlock()
@@ -144,6 +141,9 @@ func (k *kubeInfo) Namespaces(namespace string) namespaces {
 	return ret
 }
 
+/**
+ * description: 剔除指定的namespace
+ */
 func (n namespaces) Exclude(namespaces ...string) namespaces {
 	namespacesM := make(map[string]bool)
 	for _, n := range namespaces {
@@ -159,7 +159,9 @@ func (n namespaces) Exclude(namespaces ...string) namespaces {
 	return retNamespaces
 }
 
-// KubeServiceStatus defines services' status of specific service.
+/**
+ * description: 定义service的简要信息结构体
+ */
 type KubeServiceStatus struct {
 	UID        string `json:"uid"`
 	Name       string `json:"name"`
@@ -170,7 +172,9 @@ type KubeServiceStatus struct {
 	Age        string `json:"age"`
 }
 
-// KubePodStatus defines pods' status of specific service.
+/**
+ * description: 定义pod的简要信息结构体
+ */
 type KubePodStatus struct {
 	UID      string `json:"uid"`
 	Name     string `json:"name"`
@@ -180,7 +184,9 @@ type KubePodStatus struct {
 	Age      string `json:"age"`
 }
 
-// Status returns pods' brief information.
+/**
+ * description: 返回pods的简要信息
+ */
 func (p pods) Status() []KubePodStatus {
 	log.Info("[API] /api/diagnose Pods Status start", "ts", time.Now())
 
@@ -199,7 +205,7 @@ func (p pods) Status() []KubePodStatus {
 			Name:     item.Name,
 			Ready:    fmt.Sprintf("%d/%d", readyCnt, containerCnt),
 			Status:   string(item.Status.Phase),
-			Restarts: readyCnt,
+			Restarts: readyCnt, // Todo
 			Age:      time.Since(item.CreationTimestamp.Time).Truncate(time.Second).String(),
 		})
 	}
@@ -209,13 +215,16 @@ func (p pods) Status() []KubePodStatus {
 	return pods
 }
 
-// Status returns services' brief information.
+/**
+ * description: 返回services的简要信息
+ */
 func (p services) Status() []KubeServiceStatus {
 	log.Info("[API] /api/diagnose Services Status start", "ts", time.Now())
 
 	components := make([]KubeServiceStatus, 0, len(p))
 	for _, item := range p {
 		ports := ""
+		// 遍历每个service中的Ports
 		for _, p := range item.Spec.Ports {
 			ports += fmt.Sprintf(",%d/%s", p.Port, p.Protocol)
 		}
@@ -265,6 +274,9 @@ func (k *kubeInfo) Pods() pods {
 	return k.pods
 }
 
+/**
+ * description: 根据pod name返回一组pod
+ */
 func (k *kubeInfo) PodsByName(name string) pods {
 	k.mtx.RLock()
 	defer k.mtx.RUnlock()
@@ -282,7 +294,7 @@ func (k *kubeInfo) PodsByName(name string) pods {
 	return retPods
 }
 
-type pods []v1.Pod
+type pods []v1.Pod // 即k8s中定义的一组pod
 
 func (p pods) Exclude(namespaces ...string) pods {
 	namespacesM := make(map[string]bool)
@@ -299,7 +311,9 @@ func (p pods) Exclude(namespaces ...string) pods {
 	return retPods
 }
 
-// Tree wraps k8s service tree
+/**
+ * description: k8s中service tree
+ */
 type Tree struct {
 	Title         string `json:"title"`
 	Key           string `json:"key"`
@@ -308,6 +322,9 @@ type Tree struct {
 	Children      []Tree `json:"children"`
 }
 
+/**
+ * description: 返回service tree
+ */
 func (k *kubeInfo) Tree() []Tree {
 	services := k.Services("").Exclude("kube-system", bootstrap.Args.IstioNamespace, bootstrap.Args.Namespace)
 	t := make([]Tree, 0, len(services))
@@ -331,7 +348,9 @@ func (k *kubeInfo) Tree() []Tree {
 	return t
 }
 
-// sync syncs services data from Kubernetes periodically.
+/**
+ * description: 从k8s和istio中周期性同步集群信息
+ */
 func (k *kubeInfo) sync() {
 	for {
 		log.Debug("[Kube] sync start", "svcs", len(k.services), "namespace", k.namespace, "time", time.Now())

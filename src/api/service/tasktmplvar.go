@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package service
 
 import (
@@ -22,7 +8,9 @@ import (
 	"github.com/xiaomi/naftis/src/api/storer/db"
 )
 
-// TaskTmplVar wraps task service for easily use.
+/**
+ * description: taskTmplVar的增删改查
+ */
 var TaskTmplVar taskTmplVar
 
 type taskTmplVar struct{}
@@ -34,7 +22,7 @@ var mockVersions = []string{
 func (taskTmplVar) Get(name, title, comment, dataSource string, formType, tasktmplID uint, ids []uint) []model.TaskTmplVar {
 	vars := db.GetTaskTmplVar(name, title, comment, dataSource, formType, tasktmplID, ids)
 	for i := range vars {
-		// parse datasource variable, return specific datasource map
+		// 解析`datasource`变量，返回特定的`datasource`映射
 		switch strings.ToLower(vars[i].DataSource) {
 		case "host":
 			data := make(map[string]string)

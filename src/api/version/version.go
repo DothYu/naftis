@@ -1,17 +1,3 @@
-// Copyright 2018 Istio Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // Package version provides build version information.
 package version
 
@@ -20,7 +6,7 @@ import (
 	"runtime"
 )
 
-// The following fields are populated at build time using -ldflags -X.
+// 在构建时，使用-ldflags -X填充以下字段。
 // Note that DATE is omitted for reproducible builds
 var (
 	buildVersion     = "unknown"
@@ -31,7 +17,7 @@ var (
 	buildTime        = "unknown"
 )
 
-// BuildInfo describes version information about the binary build.
+// BuildInfo描述有关二进制版本的版本信息。
 type BuildInfo struct {
 	Version       string `json:"version"`
 	GitRevision   string `json:"revision"`
@@ -43,11 +29,10 @@ type BuildInfo struct {
 }
 
 var (
-	// Info exports the build version information.
 	Info BuildInfo
 )
 
-// String produces a single-line version info
+// 生成单行版本信息
 //
 // This looks like:
 //
@@ -64,7 +49,7 @@ func (b BuildInfo) String() string {
 		b.BuildTime)
 }
 
-// LongForm returns a multi-line version information
+// 生成多行版本信息
 //
 // This looks like:
 //
@@ -92,6 +77,9 @@ BuildTime: %v
 		b.BuildTime)
 }
 
+/**
+ * description: version包初始化
+ */
 func init() {
 	Info = BuildInfo{
 		Version:       buildVersion,

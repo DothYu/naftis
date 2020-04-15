@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package db
 
 import (
@@ -21,7 +7,9 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// AddTaskTmplVar adds a record into table `task_tmpl_vars`.
+/**
+ * description: 新增`task_tmpl_vars`一条记录
+ */
 func AddTaskTmplVar(name, title, comment, dataSource string, taskTmplID, formType uint) (t model.TaskTmplVar, e error) {
 	if name == "" || title == "" {
 		return t, ErrInvalidParams
@@ -43,7 +31,9 @@ func AddTaskTmplVar(name, title, comment, dataSource string, taskTmplID, formTyp
 	return
 }
 
-// DelTaskTmplVar deletes specific record of table `task_tmpl_vars`.
+/**
+ * description: 删除`task_tmpl_vars`中特定的记录
+ */
 func DelTaskTmplVar(id int) error {
 	if e := db.Where("id = ?", id).Delete(model.TaskTmplVar{}).Error; e != nil {
 		log.Info("[service] TaskTmplVar fail", "error", e.Error())
@@ -52,7 +42,9 @@ func DelTaskTmplVar(id int) error {
 	return nil
 }
 
-// UpdateTaskTmplVar updates specific record of table `task_tmpl_vars`.
+/**
+ * description: 更新`task_tmpl_vars`中特定的记录
+ */
 func UpdateTaskTmplVar(name, title, comment, dataSource string, id, formType uint) error {
 	if id == 0 || name == "" || title == "" {
 		return ErrInvalidParams
@@ -83,7 +75,9 @@ func UpdateTaskTmplVar(name, title, comment, dataSource string, id, formType uin
 	return nil
 }
 
-// GetTaskTmplVar queries records from table `task_tmpl_vars` with provided fields.
+/**
+ * description: 根据条件查询`task_tmpl_vars`中符合的记录
+ */
 func GetTaskTmplVar(name, title, comment, dataSource string, formType, tasktmplID uint, ids []uint) []model.TaskTmplVar {
 	var whereStr = "1=1 "
 	var args = make([]interface{}, 0)

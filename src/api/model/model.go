@@ -1,24 +1,12 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package model
 
 import (
 	"time"
 )
 
-// TaskTmpl defines fields of table `task_tmpls`.
+/**
+ * description: 定义了taskTmpl的结构体，对应table `task_tmpls`
+ */
 type TaskTmpl struct {
 	ID        uint          `json:"id" gorm:"primary_key"`
 	CreatedAt time.Time     `json:"createAt"`
@@ -41,7 +29,9 @@ type Var struct {
 	DataSource interface{} `json:"value" gorm:"column:data_source"`
 }
 
-// TaskTmplVar defines template variable fields.
+/**
+ * description: 定义了模板变量结构体
+ */
 type TaskTmplVar struct {
 	TaskTmplID uint        `json:"taskTmplID" gorm:"task_tmpl_id"`
 	Name       string      `json:"name"`
@@ -54,13 +44,13 @@ type TaskTmplVar struct {
 }
 
 const (
-	// TaskStatusDefault means task is currently created.
+	// task is currently created.
 	TaskStatusDefault uint = iota
-	// TaskStatusProcessing means task is under processing.
+	// task 正在执行
 	TaskStatusProcessing
-	// TaskStatusSucc means task is executed success.
+	// task 执行成功
 	TaskStatusSucc
-	// TaskStatusFail means task is executed fail.
+	// task 执行失败
 	TaskStatusFail
 )
 
@@ -68,8 +58,8 @@ const (
 type TaskCmd int
 
 const (
-	// Apply combines Create command and Replace Command,
-	// Apply command will try "replace" command first, if the command goes wrong, we try "Create" command later.
+	// Apply包含 Create和Replace命令
+	// 它会首先尝试Replace命令，如果出错，则执行Create命令
 	Apply TaskCmd = iota + 1
 	// Create represents istioctl "create" subcommand.
 	Create
@@ -81,7 +71,9 @@ const (
 	Rollback
 )
 
-// Task defines fields of table `tasks`.
+/**
+ * description: 定义了task的结构体，对应table `tasks`
+ */
 type Task struct {
 	ID         uint       `json:"id" gorm:"primary_key"`
 	CreatedAt  time.Time  `json:"createAt"`

@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package handler
 
 import (
@@ -35,18 +21,21 @@ type taskPayload struct {
 }
 
 var (
-	// ErrInvalidServiceUID is returned when request contains invalid service UID
+	// invalid service UID
 	ErrInvalidServiceUID = errors.New("invalid serviceUID")
-	// ErrInvalidVarMap is returned when request contains invalid variable maps
+	// invalid variable maps
 	ErrInvalidVarMap = errors.New("invalid varMap")
-	// ErrInvalidTmplID is returned when request contains invalid task template ID
+	// invalid task template ID
 	ErrInvalidTmplID = errors.New("invalid tmplID")
-	// ErrInvalidCommand is returned when request contains invalid command
+	// invalid command
 	ErrInvalidCommand = errors.New("invalid command")
-	// ErrInvalidNamespace is returned when request contains invalid namespace
+	// invalid namespace
 	ErrInvalidNamespace = errors.New("invalid namespace")
 )
 
+/**
+ * description: taskPayload验证
+ */
 func (t taskPayload) validate() (e error) {
 	if t.ServiceUID == "" {
 		return ErrInvalidServiceUID
@@ -60,7 +49,9 @@ func (t taskPayload) validate() (e error) {
 	return
 }
 
-// ListTasks returns all stored tasks.
+/**
+ * description: 根据条件返回已保存的tasks，及其所属task模板(if exist)
+ */
 func ListTasks(c *gin.Context) {
 	var id = cast.ToUint(c.Param("id"))
 	var serviceUID = c.Query("serviceUID")
@@ -117,6 +108,9 @@ func convertCmd(cmdStr string) (cmd int) {
 }
 
 // AddTasks adds a task into task worker.
+/**
+ * description: 添加一个任务到任务工作器中
+ */
 func AddTasks(c *gin.Context) {
 	var p taskPayload
 	if e := c.BindJSON(&p); e != nil {
@@ -130,7 +124,7 @@ func AddTasks(c *gin.Context) {
 		return
 	}
 
-	// Execute rollback command.
+	// 执行rollback回滚操作
 	if cmd := convertCmd(p.Command); cmd == int(model.Rollback) {
 		if e := service.Task.Add(0, cmd, p.Content, util.User(c).Name, p.ServiceUID, p.Namespace); e != nil {
 			util.OpFailFn(c, e)
@@ -177,7 +171,9 @@ func AddTasks(c *gin.Context) {
 	c.JSON(200, util.RetOK)
 }
 
-// UpdateTasks updates specific task.
+/**
+ * description: 更新指定的task
+ */
 // Deprecated: the function is already Deprecated.
 func UpdateTasks(c *gin.Context) {
 	var id = cast.ToUint(c.Param("id"))
@@ -193,7 +189,9 @@ func UpdateTasks(c *gin.Context) {
 	c.JSON(200, util.RetOK)
 }
 
-// DeleteTasks delete specific task.
+/**
+ * description: 删除指定的task
+ */
 // Deprecated: the function is already Deprecated.
 func DeleteTasks(c *gin.Context) {
 	var id = cast.ToUint(c.Param("id"))

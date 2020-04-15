@@ -1,17 +1,3 @@
-// Copyright 2018 Naftis Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
@@ -35,6 +21,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+/**
+ * description: Cobra: 三个基本概念commands,arguments和flags
+ * commands: 行为
+ * arguments: 数值
+ * flags: 对行为的改变
+ * 例子: # git是appname，clone是commands，URL是arguments，brae是flags
+		git clone URL --bare
+*/
 var (
 	rootCmd = &cobra.Command{
 		Use:               "naftis-api",
@@ -64,23 +58,28 @@ func init() {
 	startCmd.PersistentFlags().StringVarP(&bootstrap.Args.IstioNamespace, "istioNamespace", "I", "istio-system",
 		"Start server with provided deployed Istio namespace")
 
+	// 将命令添加到父项中
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(version.Command())
 }
 
+/**
+ * description: startCmd定义的RunE
+ */
 func start(_ *cobra.Command, _ []string) error {
 	parseConfig()
 
 	log.Init()
+	// 读取配置文件中的应用启动模式并设置
 	mode := viper.GetString("mode")
 	gin.SetMode(mode)
 	bootstrap.SetDebug(mode)
 
-	// set quit signal
+	// 监听进程结束的信号
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	// build HTTP server
+	// 设置后端服务
 	engine := gin.Default()
 	executor.Init()
 	router.Init(engine)
@@ -90,20 +89,20 @@ func start(_ *cobra.Command, _ []string) error {
 		Handler: engine,
 	}
 
-	// start worker
+	// 开启任务执行器
 	go worker.Start()
 
-	// graceful shutdown server
+	// 优雅关闭服务
 	go func() {
 		<-quit
 		worker.Stop()
-		fmt.Println("stoping server now")
+		fmt.Println("stopping server now")
 		if err := server.Close(); err != nil {
 			fmt.Println("Server Close:", err)
 		}
 	}()
 
-	// start HTTP server
+	// 开启后端服务
 	if err := server.ListenAndServe(); err != nil {
 		if err == http.ErrServerClosed {
 			fmt.Printf("Server closed under request\n")
@@ -115,14 +114,19 @@ func start(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
+/**
+ * description: 应用配置文件初始化
+ */
 func parseConfig() {
+	// 使用viper来管理配置文件
 	viper.SetConfigFile(bootstrap.Args.ConfigFile)
+	// 根据以上配置读取加载配置文件
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("parse config file fail: %s", err))
 	}
 
-	// init Naftis namespace
+	// 初始化 Naftis namespace
 	b, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace") // just pass the file name
 	if err != nil || string(b) == "" {
 		log.Info("[k8s] get Naftis namespace fail or get empty namespace, use `naftis` by default", "err", err, "namespace", string(b))
@@ -140,6 +144,7 @@ func parseConfig() {
 }
 
 func main() {
+	// 初始化Cobra
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(-1)
 	}
